@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YT HOME</title>
+    <link rel="stylesheet" href="navbar.css">
+    <script src="https://kit.fontawesome.com/7ea2aa966e.js" crossorigin="anonymous"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;500&family=Roboto:wght@300&family=Zen+Maru+Gothic:wght@300&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0%;
+            padding: 0%;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 14px;
+            line-height: 20px;
+        }
+
+        #result_div {
+            box-sizing: border-box;
+            padding: 25px 15px;
+            width: 94.5vw;
+            min-height: fit-content;
+            display: grid;
+            grid-template-columns: repeat(4, 339px);
+            justify-content: space-around;
+            position: absolute;
+            right: 0px;
+            background-color: whitesmoke;
+            margin-top: 57px;
+        }
+
+
+        #video_div {
+            width: 339px;
+            height: 320px;
+            position: relative;
+        }
+
+        #video_div>img {
+            width: 339px;
+            height: 180px;
+            position: relative;
+        }
+
+
+        #channel_name {
+            /* border: solid 1px black; */
+            display: block;
+            margin-top: 10px;
+            font-size: 12px;
+            font-weight: lighter;
+            position: absolute;
+            top: 225px;
+        }
+
+        #title_div {
+            /* border: 1px solid red; */
+            height: 40px;
+            width: 280px;
+            overflow: hidden;
+            position: absolute;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- navbar starting -->
+
+    <header>
+        <div id="options">
+            <button id="bars"><i class="fas fa-bars"></i></button>
+        </div>
+        <div id="logo">
+            <a href="index.html" id="youtube_logo">
+                <img src="yt-logo.png" alt="">
+            </a>
+        </div>
+        <div id="search_box">
+            <div id="input_div">
+                <div id="input_cross_div">
+                    <input id="input_block" type="text" placeholder="Search">
+                    <button id="clear_button" onclick="clear_input_div()"><i class="fas fa-times"></i></button>
+
+                </div>
+                <button id="search_button"><i class="fas fa-search"></i></button>
+            </div>
+            <button id="mic_button"><i class="fas fa-microphone"></i></button>
+
+        </div>
+        <div id="icons">
+           
+            <div class="icon_divs">
+                <button class="icon" id="apps_button"><i class="fas fa-th"></i></button>
+            </div>
+            <div class="icon_divs">
+                <button class="icon" id="notification_button"><i class="fas fa-ellipsis-v"></i></button>
+            </div>
+            <div id="signin_div">
+                <a href="signin.html">
+
+                    <button id="signin_button">
+
+                        <div id="user_icon_div">
+                            <i class="far fa-user"></i>
+                        </div>
+                        SIGN IN
+
+                    </button>
+                </a>
+            </div>
+           
+
+        </div>
+    </header>
+
+
+    <!-- navbar ending -->
+    <!-- <hr> -->
+
+    <div id="result_div">
+
+    </div>
+</body>
+
+</html>
+
+<!-- script starting -->
+<script>
+    let result_div = document.getElementById("result_div");
+
+    let api = 'AIzaSyB2Hc3IGzlfX9cG95cFlSNci4AX8NzQoWk'
+    let search_button = document.getElementById("search_button").addEventListener("click", searchMovie);
+
+    function searchMovie() {
+            let inp = document.getElementById("input_block").value;
+            localStorage.setItem("input_string", inp);
+            window.location.href = "search.html"
+    }
+
+    loadMostPopular();
+
+    async function loadMostPopular() {
+        try {
+            let inp = document.getElementById("input_block").value;
+
+            let url = `https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular&regionCode=IN&key=${api}&maxResults=32&part=snippet`
+            let res = await fetch(url)
+
+            let data = await res.json()
+            let array_of_videos = data.items;
+            appendVideos(array_of_videos);
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
+
+
+
+
+
+    function appendVideos(arr) {
+
+        result_div.innerHTML = "";
+
+        console.log(arr);
+
+
+        arr.forEach(({ snippet, id: { videoId } }) => {
+            // console.log(snippet);
+            let url = snippet.thumbnails.medium.url;
+
+            let title = snippet.title;
+            let channel = snippet.channelTitle;
+
+            let img = document.createElement("img");
+            img.src = url;
+            let title_div = document.createElement("div");
+            title_div.id = "title_div"
+            let name = document.createElement("h4");
+            name.innerText = title;
+            name.id = "title"
+            title_div.append(name);
+            // let name_div = document.createElement("")
+            let channel_name = document.createElement("h5");
+            channel_name.id = "channel_name";
+            channel_name.innerText = channel;
+            // console.log(channel_name);
+
+            let div = document.createElement("div");
+            div.setAttribute("id", "video_div");
+
+            div.append(img, title_div, channel_name);
+            result_div.append(div);
+
+            let video_data = {
+                snippet,
+                videoId,
+            }
+
+
+            div.onclick = () => {
+                playVideo(video_data);
+            }
+
+
+        });
+    }
+
+
+    let playVideo = (video_data) => {
+        // alert("clicked")
+        localStorage.setItem("clicked_video", JSON.stringify(video_data));
+        window.location.href = "video.html"
+        // console.log(video_data)
+    }
+
+
+    let clear_input_div = () => {
+        let input = document.getElementById("input_block");
+        input.value = "";
+    }
+</script>
+
+<!-- AIzaSyB2Hc3IGzlfX9cG95cFlSNci4AX8NzQoWk -->
